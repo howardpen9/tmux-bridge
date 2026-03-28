@@ -1,0 +1,34 @@
+{
+  "name": "@anthropic-fans/tmux-bridge",
+  "version": "0.1.0",
+  "description": "MCP server and CLI adapters that bridge smux tmux-bridge to AI agents (Gemini, Kimi, Claude Code, Codex)",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "tmux-bridge-mcp": "dist/index.js",
+    "kimi-tmux": "dist/kimi-adapter.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "tmux",
+    "gemini",
+    "kimi",
+    "smux",
+    "agent",
+    "bridge"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
