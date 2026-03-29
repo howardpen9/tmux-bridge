@@ -308,7 +308,24 @@ kimi-tmux "让 gemini 总结 claude 面板的测试结果"
 |------|------|------|
 | [smux](https://github.com/ShawnPana/smux) | tmux skill + bash CLI | Agent 通用的 tmux 配置 |
 | [agent-bridge](https://github.com/raysonmeng/agent-bridge) | WebSocket daemon + MCP 插件 | Claude Code <-> Codex |
-| **tmux-bridge**（本项目） | 独立 MCP 服务器 + 直接 tmux | 任何 Agent，零外部依赖 |
+| **tmux-bridge-mcp**（本项目） | 独立 MCP 服务器 + 直接 tmux | 任何 Agent，零外部依赖 |
+
+### smux vs tmux-bridge-mcp
+
+| 维度 | smux | tmux-bridge-mcp（本项目） |
+|------|------|--------------------------|
+| **Agent 接入方式** | Agent 跑 bash 命令（`tmux-bridge read/type/keys`） | Agent 用 MCP tool call（`tmux_read/tmux_type/tmux_keys`） |
+| **Agent 入门** | 安装 skill 或注入 system prompt 教 bash 命令 | 加 MCP config JSON -- agent 自动发现 9 个工具 |
+| **前置条件** | `curl \| bash` 安装 tmux + tmux.conf + CLI script | 只需 tmux + Node.js，`npx` 即跑 |
+| **tmux 配置** | 附带完整 tmux.conf（快捷键、鼠标、状态栏） | 不碰 tmux.conf -- 不会与你的配置冲突 |
+| **Read guard** | Bash CLI 层（`/tmp` 文件锁） | MCP server 层（`/tmp` 文件锁，同思路） |
+| **语言** | Bash（~300 行） | TypeScript（~600 行） |
+| **安装方式** | `curl \| bash`，写入 `~/.smux/` | `npm install -g` 或 `npx` |
+| **Agent 兼容性** | 任何能跑 bash 的 agent（需要 skill/prompt） | 任何支持 MCP 的 agent（标准协议） |
+
+**什么时候用 smux：** 你想要一套完整的 tmux 配置（快捷键、鼠标支持、状态栏），并且你的 agent 支持 skills 系统或者你习惯注入 system prompt。
+
+**什么时候用 tmux-bridge-mcp：** 你想要一个即插即用的 MCP 服务器，任何 MCP 兼容的 agent 都能开箱即用，不碰你的 tmux 配置。
 
 ## 许可证
 

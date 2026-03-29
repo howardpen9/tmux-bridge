@@ -323,7 +323,24 @@ For agents that support custom system prompts, use `system-instruction/smux-skil
 |---------|----------|-------|
 | [smux](https://github.com/ShawnPana/smux) | tmux skill + bash CLI | Agent-agnostic tmux setup |
 | [agent-bridge](https://github.com/raysonmeng/agent-bridge) | WebSocket daemon + MCP plugin | Claude Code <-> Codex |
-| **tmux-bridge** (this) | Standalone MCP server + direct tmux | Any agent, zero deps beyond tmux |
+| **tmux-bridge-mcp** (this) | Standalone MCP server + direct tmux | Any agent, zero deps beyond tmux |
+
+### smux vs tmux-bridge-mcp
+
+| Dimension | smux | tmux-bridge-mcp (this) |
+|-----------|------|------------------------|
+| **How agents connect** | Agent runs bash commands (`tmux-bridge read/type/keys`) | Agent uses MCP tool calls (`tmux_read/tmux_type/tmux_keys`) |
+| **Agent onboarding** | Install skill or inject system prompt to teach bash commands | Add MCP config JSON -- agent auto-discovers 9 tools |
+| **Prerequisites** | `curl \| bash` installs tmux + tmux.conf + CLI script | Just tmux + Node.js, `npx` to run |
+| **tmux configuration** | Ships full tmux.conf (keybindings, mouse, status bar) | Doesn't touch tmux.conf -- no config conflicts |
+| **Read guard** | Bash CLI layer (`/tmp` file lock) | MCP server layer (`/tmp` file lock, same concept) |
+| **Language** | Bash (~300 LOC) | TypeScript (~600 LOC) |
+| **Install** | `curl \| bash`, writes to `~/.smux/` | `npm install -g` or `npx` |
+| **Agent compatibility** | Any agent that can run bash (needs skill/prompt) | Any agent with MCP support (standard protocol) |
+
+**When to use smux:** You want a complete tmux setup (keybindings, mouse support, status bar) and your agents support the skills system or you're comfortable injecting system prompts.
+
+**When to use tmux-bridge-mcp:** You want a drop-in MCP server that works with any MCP-compatible agent out of the box, without touching your tmux configuration.
 
 ## License
 
