@@ -103,6 +103,8 @@ tmux-bridge 解决这个问题：让每个 agent 都能通过标准 MCP 工具**
 
 ## 🚀 快速开始
 
+**前置条件：** 需要安装 tmux 3.2+ 和 Node.js 18+。
+
 **一条命令配置所有 agent：**
 
 ```bash
@@ -110,6 +112,14 @@ npx tmux-bridge-mcp setup
 ```
 
 自动检测你机器上的 Claude Code、Gemini CLI、Codex 和 Kimi CLI，然后为每个写入正确的 MCP 配置。几秒完成。
+
+**验证是否正常：**
+
+```bash
+npx tmux-bridge-mcp --help
+```
+
+你应该能看到版本号和可用命令。重启你的 AI agent 以激活新工具。
 
 **看看效果：**
 
@@ -229,6 +239,13 @@ Read guard 在 MCP 层强制执行：调用 `tmux_type`、`tmux_message`、`tmux
 
 ### Kimi CLI
 
+```bash
+# 检查你的 Kimi 版本
+kimi --version
+# v1.26+ → 使用原生 MCP（推荐）
+# 更旧版本 → 使用 kimi-tmux 封装器
+```
+
 **原生 MCP（推荐，v1.26+）：**
 
 ```bash
@@ -310,6 +327,17 @@ kimi-tmux "让 gemini 总结 claude 面板的测试结果"
 | `TMUX_BRIDGE_SOCKET` | 覆盖 tmux 服务器 socket 路径 | 从 `$TMUX` 自动检测 |
 | `KIMI_PATH` | `kimi` 二进制路径（仅 kimi-tmux） | `kimi`（从 PATH） |
 
+## 🔒 安全模型
+
+tmux-bridge 专为**单机本地开发**设计，假设所有连接的 MCP agent 都是可信的：
+
+- 任何 agent 都可以读取或写入 tmux 服务器中的**任意面板** -- 没有面板级别的访问控制。
+- **Read guard**（操作前必须先 `tmux_read`）是一种时序辅助机制，防止盲目输入，**不是安全边界**。
+- 通过 `tmux_name` 设置的面板标签**没有认证** -- 任何 agent 都可以给任意面板设置或修改标签。
+- Agent 之间没有加密或认证。通信通过 tmux 自身的 IPC（Unix socket）进行。
+
+**不要在多租户环境中使用 tmux-bridge**，也不要将 tmux socket 暴露到网络上。它适用于最常见的场景：一个开发者在自己的机器上并排运行多个 AI agent。
+
 ## 📝 System Instruction
 
 对于支持自定义 system prompt 的 Agent，可使用 `system-instruction/smux-skill.md`。它包含 read-act-read 工作流说明和所有 MCP 工具的文档。
@@ -324,20 +352,20 @@ kimi-tmux "让 gemini 总结 claude 面板的测试结果"
 
 ### smux vs tmux-bridge-mcp
 
-| 维度 | smux | tmux-bridge-mcp（本项目） |
+| 維度 | smux | tmux-bridge-mcp（本項目） |
 |------|------|--------------------------|
-| **Agent 接入方式** | Agent 跑 bash 命令（`tmux-bridge read/type/keys`） | Agent 用 MCP tool call（`tmux_read/tmux_type/tmux_keys`） |
-| **Agent 入门** | 安装 skill 或注入 system prompt 教 bash 命令 | 加 MCP config JSON -- agent 自动发现 9 个工具 |
-| **前置条件** | `curl \| bash` 安装 tmux + tmux.conf + CLI script | 只需 tmux + Node.js，`npx` 即跑 |
-| **tmux 配置** | 附带完整 tmux.conf（快捷键、鼠标、状态栏） | 不碰 tmux.conf -- 不会与你的配置冲突 |
-| **Read guard** | Bash CLI 层（`/tmp` 文件锁） | MCP server 层（`/tmp` 文件锁，同思路） |
-| **语言** | Bash（~300 行） | TypeScript（~600 行） |
-| **安装方式** | `curl \| bash`，写入 `~/.smux/` | `npm install -g` 或 `npx` |
-| **Agent 兼容性** | 任何能跑 bash 的 agent（需要 skill/prompt） | 任何支持 MCP 的 agent（标准协议） |
+| 🔌 **Agent 接入方式** | Agent 跑 bash 命令（`tmux-bridge read/type/keys`） | Agent 用 MCP tool call（`tmux_read/tmux_type/tmux_keys`） |
+| 🚀 **Agent 入門** | 安裝 skill 或注入 system prompt 教 bash 命令 | 加 MCP config JSON — agent 自動發現 9 個工具 |
+| 📦 **前置條件** | `curl \| bash` 安裝 tmux + tmux.conf + CLI script | 只需 tmux + Node.js，`npx` 即跑 |
+| ⚙️ **tmux 配置** | 附帶完整 tmux.conf（快捷鍵、滑鼠、狀態列） | 不碰 tmux.conf — 不會與你的設定衝突 |
+| 🛡️ **Read guard** | Bash CLI 層（`/tmp` 檔案鎖） | MCP server 層（`/tmp` 檔案鎖，同概念） |
+| 💻 **語言** | Bash（~300 行） | TypeScript（~600 行） |
+| 📥 **安裝方式** | `curl \| bash`，寫入 `~/.smux/` | `npm install -g` 或 `npx` |
+| 🤝 **Agent 相容性** | 任何能跑 bash 的 agent（需要 skill/prompt） | 任何支援 MCP 的 agent（標準協議） |
 
-**什么时候用 smux：** 你想要一套完整的 tmux 配置（快捷键、鼠标支持、状态栏），并且你的 agent 支持 skills 系统或者你习惯注入 system prompt。
+👉 **什麼時候用 smux：** 你想要一套完整的 tmux 設定（快捷鍵、滑鼠支援、狀態列），而且你的 agent 支援 skills 系統或你習慣注入 system prompt。
 
-**什么时候用 tmux-bridge-mcp：** 你想要一个即插即用的 MCP 服务器，任何 MCP 兼容的 agent 都能开箱即用，不碰你的 tmux 配置。
+👉 **什麼時候用 tmux-bridge-mcp：** 你想要一個即插即用的 MCP 伺服器，任何 MCP 相容的 agent 都能開箱即用，不碰你的 tmux 設定。
 
 ## 📄 许可证
 
