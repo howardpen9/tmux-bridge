@@ -18,13 +18,33 @@ interface AgentResult {
   detail: string;
 }
 
-async function whichBinary(name: string): Promise<boolean> {
+export async function whichBinary(name: string): Promise<boolean> {
   try {
     await execFileAsync("which", [name], { timeout: 5_000 });
     return true;
   } catch {
     return false;
   }
+}
+
+/**
+ * Pure merge logic: given existing JSON content (or undefined/empty for new file),
+ * returns the merged JSON string with tmux-bridge entry added/updated.
+ * Throws on invalid JSON.
+ */
+export function mergeConfigJson(
+  existing: string | undefined,
+  entry: Record<string, unknown> = MCP_ENTRY
+): string {
+  let config: Record<string, unknown> = {};
+  if (existing !== undefined && existing.trim() !== "") {
+    config = JSON.parse(existing);
+  }
+  if (!config.mcpServers || typeof config.mcpServers !== "object") {
+    config.mcpServers = {};
+  }
+  (config.mcpServers as Record<string, unknown>)["tmux-bridge"] = entry;
+  return JSON.stringify(config, null, 2) + "\n";
 }
 
 async function jsonMergeConfig(
